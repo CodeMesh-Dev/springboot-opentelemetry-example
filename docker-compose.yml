@@ -6,7 +6,7 @@ services:
       context: cart-service
     container_name: cart-app
     environment:
-      order_url: http://order-app:8080
+      order_url: http://order-app:9091
       spring.application.name: cart-service
       OTEL_RESOURCE_ATTRIBUTES=service.name: cart-service
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
