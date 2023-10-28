@@ -14,6 +14,9 @@ services:
       logging.level.root: info
     ports:
       - "8080:9090"
+    depends_on:
+      - otel-collector
+      - order-app
 
   order-app:
     build:
@@ -27,15 +30,18 @@ services:
       spring.sleuth.otel.config.trace-id-ratio-based: 1
     ports:
       - "8081:9091"
+    depends_on:
+      - otel-collector
 
   curl:
     image: curlimages/curl
     depends_on:
       - cart-app
+      - order-app
     command: [ "sh","-c","while true; do curl  -X POST 'cart-app:9090/api/cart/checkout' ; sleep 10; done" ]
 
   otel-collector:
-    image: otel/opentelemetry-collector:0.47.0
+    image: otel/opentelemetry-collector-contrib:0.88.0
     command: [ "--config=/etc/otel-collector-config.yaml" ]
     volumes:
       - ./config/collector/otel-config.yaml:/etc/otel-collector-config.yaml
@@ -49,6 +55,7 @@ services:
     depends_on:
       - jaeger-all-in-one
       - prometheus
+      - loki
 
   jaeger-all-in-one:
     image: jaegertracing/all-in-one
@@ -85,3 +92,10 @@ services:
       - GF_AUTH_ORG_ROLE=Editor
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
       - GF_AUTH_DISABLE_LOGIN_FORM=true
+
+  loki:
+    image: grafana/loki:2.3.0
+    container_name: loki
+    ports:
+      - 3100:3100
+    command: -config.file=/etc/loki/local-config.yaml
