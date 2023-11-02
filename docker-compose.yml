@@ -10,6 +10,8 @@ services:
       spring.application.name: cart-service
       OTEL_RESOURCE_ATTRIBUTES=service.name: cart-service
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://otel-collector:4317
+      OTEL_TRACES_EXPORTER: otlp
       spring.sleuth.otel.config.trace-id-ratio-based: 1
       logging.level.root: info
     ports:
@@ -27,6 +29,7 @@ services:
       logging.level.root: info
       OTEL_RESOURCE_ATTRIBUTES=service.name: order-service
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://otel-collector:4317
       spring.sleuth.otel.config.trace-id-ratio-based: 1
     ports:
       - "8081:9091"
@@ -48,7 +51,8 @@ services:
     ports:
       - "1888:1888"   # pprof extension
       - "13133:13133" # health_check extension
-      - "4317:4317"        # OTLP gRPC receiver
+      - "14317:4317"        # OTLP gRPC receiver
+      - "14318:4318"
       - "55670:55679" # zpages extension
       - "8889:8889"
       - "8888:8888"
@@ -78,7 +82,7 @@ services:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--enable-feature=exemplar-storage"
     ports:
-      - "9090:9090"
+      - "19090:9090"
 
   grafana:
     image: grafana/grafana:8.3.3
@@ -94,8 +98,10 @@ services:
       - GF_AUTH_DISABLE_LOGIN_FORM=true
 
   loki:
-    image: grafana/loki:2.3.0
+    image: grafana/loki:main
     container_name: loki
     ports:
       - 3100:3100
     command: -config.file=/etc/loki/local-config.yaml
+    depends_on:
+      - grafana
