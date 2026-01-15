@@ -34,4 +34,7 @@ service:
     metrics:
       receivers: [ otlp ]
       exporters: [ logging, prometheus ]
+    logs:
+      receivers: [ otlp ]
+      exporters: [ logging ]
   extensions: [ memory_ballast, zpages ]

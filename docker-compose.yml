@@ -6,10 +6,10 @@ services:
       context: cart-service
     container_name: cart-app
     environment:
-      order_url: http://order-app:9091
+      order.url: http://order-app:9091
       spring.application.name: cart-service
       OTEL_RESOURCE_ATTRIBUTES=service.name: cart-service
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
       spring.sleuth.otel.config.trace-id-ratio-based: 1
       logging.level.root: info
     ports:
@@ -23,7 +23,7 @@ services:
       spring.application.name: order-service
       logging.level.root: info
       OTEL_RESOURCE_ATTRIBUTES=service.name: order-service
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
       spring.sleuth.otel.config.trace-id-ratio-based: 1
       payment.service.url: http://payment-app:9092
       shipping.service.url: http://shipping-app:9093
@@ -37,7 +37,7 @@ services:
     environment:
       spring.application.name: payment-service
       OTEL_RESOURCE_ATTRIBUTES=service.name: payment-service
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
       spring.sleuth.otel.config.trace-id-ratio-based: 1
       logging.level.root: info
     ports:
@@ -50,7 +50,7 @@ services:
     environment:
       spring.application.name: shipping-service
       OTEL_RESOURCE_ATTRIBUTES=service.name: shipping-service
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
       spring.sleuth.otel.config.trace-id-ratio-based: 1
       logging.level.root: info
     ports:
@@ -71,6 +71,7 @@ services:
       - "1888:1888" # pprof extension
       - "13133:13133" # health_check extension
       - "4317:4317" # OTLP gRPC receiver
+      - "4318:4318" # OTLP HTTP receiver
       - "55670:55679" # zpages extension
       - "8889:8889"
       - "8888:8888"
