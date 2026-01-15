@@ -20,6 +20,10 @@ exporters:
     endpoint: jaeger-all-in-one:4317
     tls:
       insecure: true
+  otlphttp/loki:
+    endpoint: "http://loki:3100/otlp"
+    tls:
+      insecure: true
   prometheus:
     endpoint: 0.0.0.0:8889
     resource_to_telemetry_conversion:
@@ -44,5 +48,5 @@ service:
       exporters: [ debug, prometheus ]
     logs:
       receivers: [ otlp ]
-      exporters: [ debug ]
+      exporters: [ debug, otlphttp/loki ]
   extensions: [ zpages ]

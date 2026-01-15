@@ -65,7 +65,7 @@ services:
     command: [ "sh", "-c", "while true; do curl -X POST 'cart-app:9090/api/cart/checkout' -H 'Content-Type: application/json' -d '{\"items\":[\"laptop\",\"mouse\"],\"totalAmount\":99.99,\"shippingAddress\":\"123 Main St, New York, NY 10001\",\"customerName\":\"John Doe\"}' ; sleep 10; done" ]
 
   otel-collector:
-    image: otel/opentelemetry-collector:0.143.0
+    image: otel/opentelemetry-collector-contrib:0.119.0
     command: [ "--config=/etc/otel-collector-config.yaml" ]
     volumes:
       - ./telemetry/collector/otel-config.yaml:/etc/otel-collector-config.yaml
@@ -116,3 +116,12 @@ services:
       - GF_AUTH_ORG_ROLE=Editor
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
       - GF_AUTH_DISABLE_LOGIN_FORM=true
+
+  loki:
+    image: grafana/loki:3.3.2
+    container_name: loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./telemetry/loki/loki-config.yaml:/etc/loki/local-config.yaml
