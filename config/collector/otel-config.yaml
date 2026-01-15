@@ -1,6 +1,4 @@
 extensions:
-  memory_ballast:
-    size_mib: 512
   zpages:
     endpoint: 0.0.0.0:55679
 
@@ -8,16 +6,18 @@ receivers:
   otlp:
     protocols:
       grpc:
+        endpoint: "0.0.0.0:4317"
       http:
+        endpoint: "0.0.0.0:4318"
 
 processors:
   batch:
 
 exporters:
-  logging:
-    logLevel: debug
-  jaeger:
-    endpoint: jaeger-all-in-one:14250
+  debug:
+    verbosity: detailed
+  otlp/jaeger:
+    endpoint: jaeger-all-in-one:4317
     tls:
       insecure: true
   prometheus:
@@ -30,11 +30,11 @@ service:
     traces:
       receivers: [ otlp ]
       processors: [ batch ]
-      exporters: [ jaeger ]
+      exporters: [ otlp/jaeger ]
     metrics:
       receivers: [ otlp ]
-      exporters: [ logging, prometheus ]
+      exporters: [ debug, prometheus ]
     logs:
       receivers: [ otlp ]
-      exporters: [ logging ]
-  extensions: [ memory_ballast, zpages ]
+      exporters: [ debug ]
+  extensions: [ zpages ]
