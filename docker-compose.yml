@@ -68,7 +68,7 @@ services:
     image: otel/opentelemetry-collector:0.143.0
     command: [ "--config=/etc/otel-collector-config.yaml" ]
     volumes:
-      - ./config/collector/otel-config.yaml:/etc/otel-collector-config.yaml
+      - ./telemetry/collector/otel-config.yaml:/etc/otel-collector-config.yaml
     ports:
       - "1888:1888" # pprof extension
       - "13133:13133" # health_check extension
@@ -97,7 +97,7 @@ services:
     image: prom/prometheus:v3.9.0
     container_name: prometheus
     volumes:
-      - ./config/prometheus/config.yml/:/etc/prometheus/prometheus.yml
+      - ./telemetry/prometheus/config.yml:/etc/prometheus/prometheus.yml
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--enable-feature=exemplar-storage"
@@ -110,7 +110,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./config/grafana/provisioning:/etc/grafana/provisioning
+      - ./telemetry/grafana/provisioning:/etc/grafana/provisioning
     environment:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ORG_ROLE=Editor
