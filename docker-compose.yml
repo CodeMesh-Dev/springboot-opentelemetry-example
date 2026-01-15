@@ -10,6 +10,7 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
       SPRING_SLEUTH_OTEL_CONFIG_TRACE_ID_RATIO_BASED: 1
       LOGGING_LEVEL_ROOT: info
+      OTEL_INSTRUMENTATION_SPRING_DATA_ENABLED: "false"
     ports:
       - "8080:9090"
 
@@ -25,6 +26,7 @@ services:
       SPRING_SLEUTH_OTEL_CONFIG_TRACE_ID_RATIO_BASED: 1
       PAYMENT_SERVICE_URL: http://payment-app:9092
       SHIPPING_SERVICE_URL: http://shipping-app:9093
+      OTEL_INSTRUMENTATION_SPRING_DATA_ENABLED: "false"
     ports:
       - "8081:9091"
 
@@ -38,6 +40,7 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
       SPRING_SLEUTH_OTEL_CONFIG_TRACE_ID_RATIO_BASED: 1
       LOGGING_LEVEL_ROOT: info
+      OTEL_INSTRUMENTATION_SPRING_DATA_ENABLED: "false"
     ports:
       - "8082:9092"
 
@@ -51,6 +54,7 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
       SPRING_SLEUTH_OTEL_CONFIG_TRACE_ID_RATIO_BASED: 1
       LOGGING_LEVEL_ROOT: info
+      OTEL_INSTRUMENTATION_SPRING_DATA_ENABLED: "false"
     ports:
       - "8083:9093"
 
