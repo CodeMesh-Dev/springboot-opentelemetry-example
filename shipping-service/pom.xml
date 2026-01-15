@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>dev.codemesh</groupId>
-	<artifactId>order-service</artifactId>
+	<artifactId>shipping-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>order-service</name>
-	<description>Order service for opentelemetry demo</description>
+	<name>shipping-service</name>
+	<description>Shipping service for opentelemetry demo</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>

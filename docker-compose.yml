@@ -25,14 +25,42 @@ services:
       OTEL_RESOURCE_ATTRIBUTES=service.name: order-service
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
       spring.sleuth.otel.config.trace-id-ratio-based: 1
+      payment.service.url: http://payment-app:9092
+      shipping.service.url: http://shipping-app:9093
     ports:
       - "8081:9091"
+
+  payment-app:
+    build:
+      context: payment-service
+    container_name: payment-app
+    environment:
+      spring.application.name: payment-service
+      OTEL_RESOURCE_ATTRIBUTES=service.name: payment-service
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      spring.sleuth.otel.config.trace-id-ratio-based: 1
+      logging.level.root: info
+    ports:
+      - "8082:9092"
+
+  shipping-app:
+    build:
+      context: shipping-service
+    container_name: shipping-app
+    environment:
+      spring.application.name: shipping-service
+      OTEL_RESOURCE_ATTRIBUTES=service.name: shipping-service
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      spring.sleuth.otel.config.trace-id-ratio-based: 1
+      logging.level.root: info
+    ports:
+      - "8083:9093"
 
   curl:
     image: curlimages/curl
     depends_on:
       - cart-app
-    command: [ "sh","-c","while true; do curl  -X POST 'cart-app:9090/api/cart/checkout' ; sleep 10; done" ]
+    command: [ "sh", "-c", "while true; do curl -X POST 'cart-app:9090/api/cart/checkout' -H 'Content-Type: application/json' -d '{\"items\":[\"laptop\",\"mouse\"],\"totalAmount\":99.99,\"shippingAddress\":\"123 Main St, New York, NY 10001\",\"customerName\":\"John Doe\"}' ; sleep 10; done" ]
 
   otel-collector:
     image: otel/opentelemetry-collector:0.47.0
@@ -40,9 +68,9 @@ services:
     volumes:
       - ./config/collector/otel-config.yaml:/etc/otel-collector-config.yaml
     ports:
-      - "1888:1888"   # pprof extension
+      - "1888:1888" # pprof extension
       - "13133:13133" # health_check extension
-      - "4317:4317"        # OTLP gRPC receiver
+      - "4317:4317" # OTLP gRPC receiver
       - "55670:55679" # zpages extension
       - "8889:8889"
       - "8888:8888"

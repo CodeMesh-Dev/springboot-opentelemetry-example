@@ -1,0 +1,39 @@
+server:
+  port: 9091
+
+spring:
+  application:
+    name: order-service
+  
+  datasource:
+    url: jdbc:h2:mem:orderdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+payment:
+  service:
+    url: http://payment-app:9092
+
+shipping:
+  service:
+    url: http://shipping-app:9093
+
+logging:
+  level:
+    root: info
+    dev.codemesh.opentelemetry.orderservice: debug

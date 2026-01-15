@@ -1,42 +1,43 @@
 package dev.codemesh.opentelemetry.cart;
 
-import jakarta.annotation.PostConstruct;
+import dev.codemesh.opentelemetry.cart.model.OrderRequest;
+import dev.codemesh.opentelemetry.cart.model.OrderResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.stereotype.Service;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-@Service
+@Component
 public class OrderServiceClient {
-    @Autowired
-    private RestTemplate restTemplate;
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(OrderServiceClient.class);
 
-    @Value("${order.url}")
-    private String orderUrl;
+    private final RestTemplate restTemplate;
+    private final String orderServiceUrl;
 
-    private String ORDER_ENDPOINT;
-
-    @PostConstruct
-    public void initialize() {
-        logger.info("Initializing with endpoint " + orderUrl);
-        ORDER_ENDPOINT = orderUrl + "/api/order";
+    public OrderServiceClient(RestTemplate restTemplate,
+                              @Value("${order_url}") String orderServiceUrl) {
+        this.restTemplate = restTemplate;
+        this.orderServiceUrl = orderServiceUrl;
     }
 
-    public String createOrder(String requestBody) {
-        logger.info("POST API call to ::: " + ORDER_ENDPOINT);
-        String response = restTemplate.postForObject(ORDER_ENDPOINT, createHttpReq(requestBody), String.class);
-        return response;
-    }
-
-    private HttpEntity createHttpReq(String requestBody) {
-        HttpHeaders headers = new HttpHeaders();
-        HttpEntity httpEntity = new HttpEntity<>(requestBody, headers);
-        return httpEntity;
+    public OrderResponse createOrder(OrderRequest request) {
+        String url = orderServiceUrl + "/api/order";
+        
+        logger.info("Calling order service with amount: {}", request.getTotalAmount());
+        
+        try {
+            ResponseEntity<OrderResponse> response = restTemplate.postForEntity(
+                    url, request, OrderResponse.class);
+            
+            logger.info("Order service response: {}", response.getBody());
+            return response.getBody();
+            
+        } catch (Exception e) {
+            logger.error("Error calling order service: {}", e.getMessage());
+            throw new RuntimeException("Order service unavailable", e);
+        }
     }
 }

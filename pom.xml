@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.sandeep</groupId>
+    <groupId>dev.codemesh</groupId>
     <artifactId>springboot-opentelemetry-example</artifactId>
     <version>0.1.0</version>
     <packaging>pom</packaging>
@@ -11,6 +11,8 @@
     <modules>
         <module>cart-service</module>
         <module>order-service</module>
+        <module>payment-service</module>
+        <module>shipping-service</module>
    </modules>
 
 </project>
