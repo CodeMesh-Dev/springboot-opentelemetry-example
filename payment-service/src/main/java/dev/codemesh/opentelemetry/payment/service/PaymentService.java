@@ -38,6 +38,11 @@ public class PaymentService {
         String transactionId = UUID.randomUUID().toString();
         PaymentStatus status = paymentSuccessful ? PaymentStatus.SUCCESS : PaymentStatus.FAILED;
 
+        if (!paymentSuccessful) {
+            io.opentelemetry.api.trace.Span.current()
+                .setStatus(io.opentelemetry.api.trace.StatusCode.ERROR, "Payment failed (simulated)");
+        }
+
         // Create and save payment record
         Payment payment = Payment.builder()
                 .orderId(request.getOrderId())

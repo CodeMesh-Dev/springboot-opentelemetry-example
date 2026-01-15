@@ -1,17 +1,16 @@
-version: '3.9'
-
 services:
   cart-app:
     build:
       context: cart-service
     container_name: cart-app
     environment:
-      order_url: http://order-app:9091
-      spring.application.name: cart-service
-      OTEL_RESOURCE_ATTRIBUTES=service.name: cart-service
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
-      spring.sleuth.otel.config.trace-id-ratio-based: 1
-      logging.level.root: info
+      ORDER_URL: http://order-app:9091
+      SPRING_APPLICATION_NAME: cart-service
+      OTEL_RESOURCE_ATTRIBUTES: service.name=cart-service
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+      SPRING_SLEUTH_OTEL_CONFIG_TRACE_ID_RATIO_BASED: 1
+      LOGGING_LEVEL_ROOT: info
+      OTEL_INSTRUMENTATION_SPRING_DATA_ENABLED: "false"
     ports:
       - "8080:9090"
 
@@ -20,13 +19,14 @@ services:
       context: order-service
     container_name: order-app
     environment:
-      spring.application.name: order-service
-      logging.level.root: info
-      OTEL_RESOURCE_ATTRIBUTES=service.name: order-service
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
-      spring.sleuth.otel.config.trace-id-ratio-based: 1
-      payment.service.url: http://payment-app:9092
-      shipping.service.url: http://shipping-app:9093
+      SPRING_APPLICATION_NAME: order-service
+      LOGGING_LEVEL_ROOT: info
+      OTEL_RESOURCE_ATTRIBUTES: service.name=order-service
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+      SPRING_SLEUTH_OTEL_CONFIG_TRACE_ID_RATIO_BASED: 1
+      PAYMENT_SERVICE_URL: http://payment-app:9092
+      SHIPPING_SERVICE_URL: http://shipping-app:9093
+      OTEL_INSTRUMENTATION_SPRING_DATA_ENABLED: "false"
     ports:
       - "8081:9091"
 
@@ -35,11 +35,12 @@ services:
       context: payment-service
     container_name: payment-app
     environment:
-      spring.application.name: payment-service
-      OTEL_RESOURCE_ATTRIBUTES=service.name: payment-service
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
-      spring.sleuth.otel.config.trace-id-ratio-based: 1
-      logging.level.root: info
+      SPRING_APPLICATION_NAME: payment-service
+      OTEL_RESOURCE_ATTRIBUTES: service.name=payment-service
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+      SPRING_SLEUTH_OTEL_CONFIG_TRACE_ID_RATIO_BASED: 1
+      LOGGING_LEVEL_ROOT: info
+      OTEL_INSTRUMENTATION_SPRING_DATA_ENABLED: "false"
     ports:
       - "8082:9092"
 
@@ -48,11 +49,12 @@ services:
       context: shipping-service
     container_name: shipping-app
     environment:
-      spring.application.name: shipping-service
-      OTEL_RESOURCE_ATTRIBUTES=service.name: shipping-service
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
-      spring.sleuth.otel.config.trace-id-ratio-based: 1
-      logging.level.root: info
+      SPRING_APPLICATION_NAME: shipping-service
+      OTEL_RESOURCE_ATTRIBUTES: service.name=shipping-service
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+      SPRING_SLEUTH_OTEL_CONFIG_TRACE_ID_RATIO_BASED: 1
+      LOGGING_LEVEL_ROOT: info
+      OTEL_INSTRUMENTATION_SPRING_DATA_ENABLED: "false"
     ports:
       - "8083:9093"
 
@@ -63,14 +65,15 @@ services:
     command: [ "sh", "-c", "while true; do curl -X POST 'cart-app:9090/api/cart/checkout' -H 'Content-Type: application/json' -d '{\"items\":[\"laptop\",\"mouse\"],\"totalAmount\":99.99,\"shippingAddress\":\"123 Main St, New York, NY 10001\",\"customerName\":\"John Doe\"}' ; sleep 10; done" ]
 
   otel-collector:
-    image: otel/opentelemetry-collector:0.47.0
+    image: otel/opentelemetry-collector-contrib:0.119.0
     command: [ "--config=/etc/otel-collector-config.yaml" ]
     volumes:
-      - ./config/collector/otel-config.yaml:/etc/otel-collector-config.yaml
+      - ./telemetry/collector/otel-config.yaml:/etc/otel-collector-config.yaml
     ports:
       - "1888:1888" # pprof extension
       - "13133:13133" # health_check extension
       - "4317:4317" # OTLP gRPC receiver
+      - "4318:4318" # OTLP HTTP receiver
       - "55670:55679" # zpages extension
       - "8889:8889"
       - "8888:8888"
@@ -79,7 +82,7 @@ services:
       - prometheus
 
   jaeger-all-in-one:
-    image: jaegertracing/all-in-one
+    image: jaegertracing/all-in-one:1.76.0
     environment:
       COLLECTOR_ZIPKIN_HOST_PORT: 9411
       COLLECTOR_ZIPKIN_HTTP_PORT: 9411
@@ -91,10 +94,10 @@ services:
       - "6832:6832/udp"
 
   prometheus:
-    image: prom/prometheus:v2.29.2
+    image: prom/prometheus:v3.9.0
     container_name: prometheus
     volumes:
-      - ./config/prometheus/config.yml/:/etc/prometheus/prometheus.yml
+      - ./telemetry/prometheus/config.yml:/etc/prometheus/prometheus.yml
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--enable-feature=exemplar-storage"
@@ -102,14 +105,23 @@ services:
       - "9090:9090"
 
   grafana:
-    image: grafana/grafana:8.3.3
+    image: grafana/grafana:12.1.0
     container_name: grafana
     ports:
       - "3000:3000"
     volumes:
-      - ./config/grafana/provisioning:/etc/grafana/provisioning
+      - ./telemetry/grafana/provisioning:/etc/grafana/provisioning
     environment:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ORG_ROLE=Editor
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
       - GF_AUTH_DISABLE_LOGIN_FORM=true
+
+  loki:
+    image: grafana/loki:3.3.2
+    container_name: loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./telemetry/loki/loki-config.yaml:/etc/loki/local-config.yaml
